@@ -119,6 +119,8 @@ pub enum AttributeType {
     Token,
     /// Determines if the object is trusted
     Trusted,
+    /// P11 3.0 Unique value generated per token
+    UniqueId,
     /// Determines if a key supports unwrapping
     Unwrap,
     /// Gives the URL where the complete certificate can be obtained
@@ -144,6 +146,7 @@ impl AttributeType {
             CKA_TOKEN => String::from(stringify!(CKA_TOKEN)),
             CKA_PRIVATE => String::from(stringify!(CKA_PRIVATE)),
             CKA_LABEL => String::from(stringify!(CKA_LABEL)),
+            CKA_UNIQUE_ID => String::from(stringify!(CKA_UNIQUE_ID)),
             CKA_APPLICATION => String::from(stringify!(CKA_APPLICATION)),
             CKA_VALUE => String::from(stringify!(CKA_VALUE)),
             CKA_OBJECT_ID => String::from(stringify!(CKA_OBJECT_ID)),
@@ -297,6 +300,7 @@ impl From<AttributeType> for CK_ATTRIBUTE_TYPE {
             AttributeType::KeyGenMechanism => CKA_KEY_GEN_MECHANISM,
             AttributeType::KeyType => CKA_KEY_TYPE,
             AttributeType::Label => CKA_LABEL,
+            AttributeType::UniqueId => CKA_UNIQUE_ID,
             AttributeType::Local => CKA_LOCAL,
             AttributeType::Modifiable => CKA_MODIFIABLE,
             AttributeType::Modulus => CKA_MODULUS,
@@ -365,6 +369,7 @@ impl TryFrom<CK_ATTRIBUTE_TYPE> for AttributeType {
             CKA_KEY_GEN_MECHANISM => Ok(AttributeType::KeyGenMechanism),
             CKA_KEY_TYPE => Ok(AttributeType::KeyType),
             CKA_LABEL => Ok(AttributeType::Label),
+            CKA_UNIQUE_ID => Ok(AttributeType::UniqueId),
             CKA_LOCAL => Ok(AttributeType::Local),
             CKA_MODIFIABLE => Ok(AttributeType::Modifiable),
             CKA_MODULUS => Ok(AttributeType::Modulus),
@@ -509,6 +514,8 @@ pub enum Attribute {
     Token(bool),
     /// Determines if an object is trusted
     Trusted(bool),
+    /// P11 3.0 Unique value generated per token
+    UniqueId(Vec<u8>),
     /// Determines if a key supports unwrapping
     Unwrap(bool),
     /// Gives the URL where the complete certificate can ber obtained
@@ -582,6 +589,7 @@ impl Attribute {
             Attribute::Subject(_) => AttributeType::Subject,
             Attribute::Token(_) => AttributeType::Token,
             Attribute::Trusted(_) => AttributeType::Trusted,
+            Attribute::UniqueId(_) => AttributeType::UniqueId,
             Attribute::Unwrap(_) => AttributeType::Unwrap,
             Attribute::Url(_) => AttributeType::Url,
             Attribute::Value(_) => AttributeType::Value,
@@ -619,7 +627,7 @@ impl Attribute {
             | Attribute::Wrap(_)
             | Attribute::WrapWithTrusted(_) => std::mem::size_of::<bool>(),
             Attribute::Base(_) => 1,
-            Attribute::Application(bytes) | Attribute::Label(bytes) | Attribute::Url(bytes) => {
+            Attribute::Application(bytes) | Attribute::Label(bytes) | Attribute::Url(bytes) | Attribute::UniqueId(bytes)=> {
                 std::mem::size_of::<CK_UTF8CHAR>() * bytes.len()
             }
             Attribute::AcIssuer(bytes) => bytes.len(),
@@ -728,6 +736,7 @@ impl Attribute {
             | Attribute::SerialNumber(bytes)
             | Attribute::Subject(bytes)
             | Attribute::Url(bytes)
+            | Attribute::UniqueId(bytes)
             | Attribute::Value(bytes)
             | Attribute::Id(bytes) => bytes.as_ptr() as *mut c_void,
             // Unique types
@@ -842,6 +851,7 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
             }
             AttributeType::Issuer => Ok(Attribute::Issuer(val.to_vec())),
             AttributeType::Label => Ok(Attribute::Label(val.to_vec())),
+            AttributeType::UniqueId => Ok(Attribute::UniqueId(val.to_vec())),
             AttributeType::Prime => Ok(Attribute::Prime(val.to_vec())),
             AttributeType::Prime1 => Ok(Attribute::Prime1(val.to_vec())),
             AttributeType::Prime2 => Ok(Attribute::Prime2(val.to_vec())),
