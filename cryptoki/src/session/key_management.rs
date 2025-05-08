@@ -156,24 +156,4 @@ impl Session {
 
         Ok(ObjectHandle::new(handle))
     }
-
-    /// Generate a token object
-    pub fn generate_token_object(
-        &self,
-        template: &[Attribute],
-    ) -> Result<ObjectHandle> {
-        let mut template: Vec<CK_ATTRIBUTE> = template.iter().map(|attr| attr.into()).collect();
-        let mut handle = 0;
-        unsafe {
-            Rv::from(get_pkcs11!(self.client(), C_CreateObject)(
-                self.handle(),
-                template.as_mut_ptr(),
-                template.len().try_into()?,
-                &mut handle,
-            ))
-            .into_result()?;
-        }
-
-        Ok(ObjectHandle::new(handle))
-    }
 }
