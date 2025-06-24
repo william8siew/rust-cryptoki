@@ -933,7 +933,7 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 /// Token specific identifier for an object
 pub struct ObjectHandle {
     handle: CK_OBJECT_HANDLE,
