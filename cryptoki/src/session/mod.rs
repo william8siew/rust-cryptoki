@@ -89,6 +89,8 @@ pub enum UserType {
     User,
     /// Context Specific
     ContextSpecific,
+    /// VendorExtension
+    Vendor(CK_USER_TYPE),
 }
 
 impl From<UserType> for CK_USER_TYPE {
@@ -97,6 +99,7 @@ impl From<UserType> for CK_USER_TYPE {
             UserType::So => CKU_SO,
             UserType::User => CKU_USER,
             UserType::ContextSpecific => CKU_CONTEXT_SPECIFIC,
+            UserType::Vendor(v) => v,
         }
     }
 }
