@@ -39,7 +39,24 @@ pub struct MechanismType {
     val: CK_MECHANISM_TYPE,
 }
 
+/// Thales has their own defined Key Wrap mechanism which is compatible with PKCS11 standard mechanism AES_KEY_WRAP
+/// mechanism code is 0x80000170 with no parameters 
+pub const CKM_AES_KEY_WRAP_THALES: CK_MECHANISM_TYPE = 0x80000170;
+
+/// Thales has their own defined Key Wrap mechanism which is compatible with PKCS11 standard mechanism AES_KEY_WRAP_PAD
+/// mechanism code is 0x80000171 with no parameters 
+pub const CKM_AES_KEY_WRAP_PAD_THALES: CK_MECHANISM_TYPE = 0x80000171;
+
 impl MechanismType {
+    /*** Custom Vendor Mechanisms ***/
+    
+    /// AES KEY WRAP, Thales mechanism
+    pub const AES_KEY_WRAP_THALES: MechanismType = MechanismType { val: CKM_AES_KEY_WRAP_THALES };
+    /// AES KEY WRAP PAD, Thales mechanism
+    pub const AES_KEY_WRAP_PAD_THALES: MechanismType = MechanismType { val: CKM_AES_KEY_WRAP_PAD_THALES };
+
+    /*** End Custom Vendor Mechanisms ***/
+    
     // AES
     /// AES key generation mechanism
     pub const AES_KEY_GEN: MechanismType = MechanismType {
@@ -1031,6 +1048,13 @@ impl TryFrom<CK_MECHANISM_TYPE> for MechanismType {
 #[non_exhaustive]
 /// Type defining a specific mechanism and its parameters
 pub enum Mechanism<'a> {
+    /*** Custom Vendor Mechanisms ***/
+    /// AES KEY WRAP, Thales mechanism
+    AesKeyWrapThales,
+    /// AES KEY WRAP PAD, Thales mechanism
+    AesKeyWrapPadThales,
+    /*** End Custom Vendor Mechanisms ***/
+
     // AES
     /// AES key gen mechanism
     AesKeyGen,
@@ -1331,6 +1355,10 @@ impl Mechanism<'_> {
     /// Get the type of a mechanism
     pub fn mechanism_type(&self) -> MechanismType {
         match self {
+            /*** Custom Vendor Mechanisms ***/
+            Mechanism::AesKeyWrapThales => MechanismType::AES_KEY_WRAP_THALES,
+            Mechanism::AesKeyWrapPadThales => MechanismType::AES_KEY_WRAP_PAD_THALES,
+            /*** End Custom Vendor Mechanisms ***/
             Mechanism::AesKeyGen => MechanismType::AES_KEY_GEN,
             Mechanism::AesEcb => MechanismType::AES_ECB,
             Mechanism::AesCbc(_) => MechanismType::AES_CBC,
@@ -1580,7 +1608,12 @@ impl From<&Mechanism<'_>> for CK_MECHANISM {
             | Mechanism::MlKemKeyPairGen
             | Mechanism::MlKem
             | Mechanism::MlDsaKeyPairGen
-            | Mechanism::SlhDsaKeyPairGen => CK_MECHANISM {
+            | Mechanism::SlhDsaKeyPairGen 
+            /*** Custom Vendor Mechanisms ***/
+            | Mechanism::AesKeyWrapThales
+            | Mechanism::AesKeyWrapPadThales
+            /*** End Custom Vendor Mechanisms ***/
+            => CK_MECHANISM {
                 mechanism,
                 pParameter: null_mut(),
                 ulParameterLen: 0,
